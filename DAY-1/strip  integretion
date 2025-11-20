@@ -1,0 +1,65 @@
+Before looking for the keys, ensure you are viewing test data.
+
+Log in to the Stripe Dashboard.
+
+Look at the top right corner of the screen.
+
+Toggle the Test Mode switch to ON (it should turn orange).
+
+1. Get STRIPE_SECRET_KEY and NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+These two keys are located in the same place.
+
+Click on the Developers tab in the top right navigation bar.
+
+Select API keys from the left-hand menu.
+
+Publishable Key: You will see a token labeled "Publishable key." This is your NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY. It usually starts with pk_test_.
+
+Secret Key: You will see a token labeled "Secret key." Click the button that says Reveal test key. This is your STRIPE_SECRET_KEY. It usually starts with sk_test_.
+
+Security Warning: Never share your sk_test (Secret Key) or commit it to a public repository. It gives full access to your account.
+
+Here is the correct way to install the Stripe CLI on your system.
+
+Step 1: Add the Stripe Repository
+Run these three commands in your terminal one by one to add the Stripe key and repository to your system:
+
+Add the GPG Key:
+
+Bash
+
+curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg
+Add the Repository:
+
+Bash
+
+echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | sudo tee /etc/apt/sources.list.d/stripe.list
+Update your package list:
+
+Bash
+
+sudo apt update
+Step 2: Install Stripe
+Now that your system knows where to look, install the CLI:
+
+Bash
+
+sudo apt install stripe
+Step 3: Get your Webhook Secret
+Once the installation finishes successfully, you can proceed with the steps to get your STRIPE_WEBHOOK_SECRET:
+
+Login:
+
+Bash
+
+stripe login
+(Press Enter to open the browser link it gives you and authorize access)
+
+Listen for events (to generate the secret):
+
+Bash
+
+stripe listen --forward-to localhost:3000/api/webhooks
+(Make sure to change port 3000 or the path if your app is different)
+
+Copy the Secret: Look for the output line starting with whsec_.... That is your key.
