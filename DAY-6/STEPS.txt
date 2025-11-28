@@ -1,0 +1,226 @@
+Step 1: Create Project Structure
+1.1 Create Root Directory
+bash
+mkdir job-market-analyzer
+cd job-market-analyzer
+1.2 Create Directory Structure
+bash
+# Create main directories
+mkdir backend frontend shared
+
+# Backend structure
+mkdir -p backend/app/{models,routes,services}
+mkdir backend/model_training
+
+# Frontend structure  
+mkdir -p frontend/{components,pages,styles,utils,public}
+1.3 Initialize Git Repository
+bash
+git init
+Step 2: Backend Setup (FastAPI)
+2.1 Create Backend Virtual Environment
+bash
+cd backend
+python -m venv venv
+
+# Activate virtual environment
+# On Windows:
+venv\Scripts\activate
+# On Mac/Linux:
+source venv/bin/activate
+2.2 Create Backend Requirements File
+backend/requirements.txt
+
+txt
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+scikit-learn==1.3.2
+pandas==2.1.3
+numpy==1.25.2
+joblib==1.3.2
+python-multipart==0.0.6
+2.3 Install Backend Dependencies
+bash
+pip install -r requirements.txt
+2.4 Create Backend Main Application
+backend/app/init.py
+
+python
+# This file makes the app directory a Python package
+backend/app/main.py
+
+python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+# Create FastAPI application
+app = FastAPI(
+    title="Job Market Analyzer API",
+    description="API for analyzing job market trends and salary predictions",
+    version="1.0.0"
+)
+
+# Configure CORS for frontend communication
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Next.js default port
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Welcome to Job Market Analyzer API",
+        "status": "healthy",
+        "version": "1.0.0"
+    }
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+2.5 Create Backend Startup Script
+backend/run.py
+
+python
+import uvicorn
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,  # Enable auto-reload during development
+        log_level="info"
+    )
+Step 3: Frontend Setup (Next.js)
+3.1 Initialize Next.js Project
+bash
+cd ../frontend
+npm init -y
+3.2 Install Next.js Dependencies
+bash
+npm install next@14.0.0 react@^18.2.0 react-dom@^18.2.0 axios@^1.5.0
+npm install --save-dev @types/node@^20.5.0 @types/react@^18.2.0 typescript@^5.0.0
+3.3 Create Next.js Configuration
+frontend/package.json
+
+json
+{
+  "name": "job-market-analyzer-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "next": "14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.0",
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0"
+  }
+}
+3.4 Create Next.js Configuration Files
+frontend/next.config.js
+
+javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
+}
+
+module.exports = nextConfig
+frontend/tsconfig.json
+
+json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+3.5 Create Basic Frontend Pages
+frontend/pages/_app.tsx
+
+typescript
+import type { AppProps } from 'next/app'
+import '../styles/globals.css'
+
+export default function App({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />
+}
+frontend/pages/_document.tsx
+
+typescript
+import { Html, Head, Main, NextScript } from 'next/document'
+
+export default function Document() {
+  return (
+    <Html lang="en">
+      <Head />
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  )
+}
+frontend/styles/globals.css
+
+css
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
