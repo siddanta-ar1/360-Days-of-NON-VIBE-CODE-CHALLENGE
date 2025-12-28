@@ -1,0 +1,411 @@
+🧠 First: What is the Terminal?
+
+Terminal = Text-based way to talk to your computer
+
+Instead of clicking buttons, you type commands.
+
+📌 Analogy
+GUI (mouse & windows) → Talking to a receptionist
+Terminal → Talking directly to the boss
+
+1️⃣ Shell (Very Important)
+What is a Shell?
+
+A shell is a program that reads your command and tells the system what to do.
+
+Examples:
+
+bash
+
+zsh
+
+fish
+
+📌 Analogy
+Shell = Interpreter / Translator
+You speak → Shell translates → System acts
+
+2️⃣ Bash
+What is Bash?
+
+Bash = Bourne Again SHell
+
+Default shell in many Linux systems.
+
+📌 Why Bash exists
+
+Runs commands
+
+Runs scripts
+
+Controls environment
+
+📌 Where you use it
+
+Terminal
+
+Shell scripts (.sh files)
+
+📌 Analogy
+Bash = Standard language most Linux people speak
+
+3️⃣ Zsh (You may hear this)
+What is Zsh?
+
+A more powerful & modern shell than Bash.
+
+Extra features:
+
+Better auto-completion
+
+Themes (Powerlevel10k)
+
+Plugins
+
+📌 Analogy
+Bash = Normal phone
+Zsh = Smartphone
+
+4️⃣ Terminal vs Console vs TTY
+Term	Meaning
+Terminal	App where you type commands
+Console	Physical/virtual system terminal
+TTY	Text-only terminal (Ctrl+Alt+F3)
+
+📌 Analogy
+Terminal app = WhatsApp
+TTY = Direct phone call
+
+5️⃣ User
+What is a User?
+
+A user is an account with its own:
+
+Files
+
+Settings
+
+Permissions
+
+Example:
+
+mac
+dev
+root
+
+
+📌 Analogy
+User = Person living in the same house
+Each has their own room (home folder)
+
+6️⃣ Home Directory (~)
+What is Home?
+
+Your personal space.
+
+Example:
+
+/home/mac
+/home/dev
+
+
+Shortcut:
+
+~
+
+
+📌 Analogy
+Home directory = Your bedroom
+
+7️⃣ Root User
+What is Root?
+
+Superuser with full power.
+
+Can delete system files
+
+Can break system
+
+📌 Analogy
+Root = God mode / Admin of the universe
+
+⚠️ Danger: One wrong command → system destroyed
+
+8️⃣ sudo (VERY IMPORTANT)
+What is sudo?
+
+sudo = Super User DO
+
+Allows normal user to temporarily act as root.
+
+Example:
+
+sudo apt update
+
+
+📌 Why needed
+Normal users are restricted for safety.
+
+📌 Analogy
+sudo = Asking house owner for keys to locked rooms
+
+9️⃣ Password in Terminal (Why you see nothing)
+
+When typing password with sudo:
+
+No stars
+
+No dots
+
+📌 Why? Security
+
+📌 Analogy
+You whisper your password so nobody sees lip movement
+
+🔟 Command
+What is a Command?
+
+An instruction you give to shell.
+
+Example:
+
+ls
+cd
+mkdir
+
+
+📌 Analogy
+Command = Order to worker
+
+1️⃣1️⃣ Arguments
+What are Arguments?
+
+Extra information for commands.
+
+Example:
+
+ls -l /home
+
+
+ls → command
+
+-l → option
+
+/home → argument
+
+📌 Analogy
+"Bring 2 cups of water"
+
+1️⃣2️⃣ Options / Flags (-l, --all)
+What are Options?
+
+Modify how command behaves.
+
+Example:
+
+ls -a
+ls --all
+
+
+📌 Analogy
+Coffee + sugar + milk
+Options change taste
+
+1️⃣3️⃣ Path
+What is Path?
+
+Location of a file/folder.
+
+Absolute Path
+/home/mac/Documents
+
+Relative Path
+Documents
+../Downloads
+
+
+📌 Analogy
+Absolute = Full home address
+Relative = "Next room"
+
+1️⃣4️⃣ . and ..
+Symbol	Meaning
+.	Current folder
+..	Parent folder
+
+📌 Analogy
+. = You are here
+.. = One step back
+
+1️⃣5️⃣ Environment Variable
+What is it?
+
+Values that affect system behavior.
+
+Example:
+
+$PATH
+$HOME
+$USER
+
+
+📌 Analogy
+Environment = Weather settings of your room
+
+1️⃣6️⃣ PATH (Very Important)
+What is PATH?
+
+List of folders where system looks for commands.
+
+echo $PATH
+
+
+📌 Why important
+If command is not in PATH → “command not found”
+
+📌 Analogy
+PATH = List of shops you check when buying bread
+
+1️⃣7️⃣ Process
+What is a Process?
+
+A running program.
+
+Example:
+
+ps
+top
+htop
+
+
+📌 Analogy
+Process = Worker currently doing job
+
+1️⃣8️⃣ PID
+What is PID?
+
+Process ID — unique number for each process.
+
+📌 Analogy
+Employee ID number
+
+1️⃣9️⃣ Permissions
+
+Files have:
+
+Read (r)
+
+Write (w)
+
+Execute (x)
+
+ls -l
+
+
+📌 Analogy
+
+r = Read book
+
+w = Write in book
+
+x = Run machine
+
+2️⃣0️⃣ Package Manager
+What is it?
+
+Tool to install software.
+
+Examples:
+
+apt (Ubuntu)
+
+dnf
+
+pacman
+
+sudo apt install git
+
+
+📌 Analogy
+Play Store for Linux
+
+2️⃣1️⃣ Script
+What is a Script?
+
+A file with multiple commands.
+
+Example:
+
+backup.sh
+
+
+Run with:
+
+bash backup.sh
+
+
+📌 Analogy
+Recipe with steps
+
+2️⃣2️⃣ Dotfiles (.bashrc, .zshrc)
+What are Dotfiles?
+
+Hidden config files.
+
+📌 Analogy
+Settings file of your phone
+
+2️⃣3️⃣ Base (You asked this 👍)
+What is (base)?
+
+This comes from Conda (Anaconda/Miniconda).
+
+(base) = default conda environment
+
+Used for Python projects
+
+📌 Analogy
+Base = Default toolbox
+Other environments = Specialized toolboxes
+
+2️⃣4️⃣ Why Terminal Feels Hard at First
+
+Because:
+
+No visuals
+
+One mistake matters
+
+Requires memory
+
+📌 Truth
+Every Linux expert once typed:
+
+command not found
+permission denied
+
+🧩 Big Picture Analogy
+
+🖥️ Computer = Factory
+👤 User = Worker
+🧠 Shell = Manager
+📜 Command = Instruction
+🔑 sudo = Master key
+🏠 Home = Personal desk
+👑 Root = Owner
+
+✅ What You Should Practice First
+
+Start with:
+
+pwd
+ls
+cd
+mkdir
+rm
+cp
+mv
+sudo
+apt
+nano
+vim
