@@ -1,4 +1,4 @@
-// Topic The Universal Logic of Computation (Turing COmpletenes).
+// Topic The Universal Logic of Computation (Turing Completenes).
 // Concept: Any Computer algorithm can be simulated by a simple machine that reads/writes symbols on a tape
 // Task: Write a simulator of a Turing Machine in Javascript or Python
 //  It should take an "instruction set" and a "tape" (array)

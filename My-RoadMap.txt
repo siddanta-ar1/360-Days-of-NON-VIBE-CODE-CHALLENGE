@@ -1,0 +1,170 @@
+The "15-Line" Rule
+For every concept, you must write a minimum of 15 lines of code that demonstrate logic, not just syntax.
+
+Bad: Copy-pasting a library import.
+
+Good: Implementing a simplified version of the library's core logic (e.g., "Don't just use useEffect; write a vanilla JS observer pattern that mimics it").
+
+Phase 1: Deepening the Stack (Days 1–90)
+Goal: Move from "Framework User" to "Framework Architect." Understand exactly how Next.js/React works under the hood.
+
+Month 1: The Runtime & React Internals
+Days 1–5: The Event Loop & Async Logic.
+
+Concept: Microtasks vs. Macrotasks.
+
+Code: Write a custom Scheduler class that prioritizes tasks effectively.
+
+Days 6–10: V8 Engine Mechanics.
+
+Concept: Call Stack, Heap, Garbage Collection (Mark-and-Sweep).
+
+Code: Create a script that intentionally causes a memory leak, then fix it by dereferencing.
+
+Days 11–20: React Reconciliation (The Fiber Architecture).
+
+Concept: Virtual DOM diffing algorithms.
+
+Code: Write a function diff(oldTree, newTree) that returns a list of DOM patches.
+
+Days 21–30: State Management Patterns.
+
+Concept: Pub/Sub, Signals, Proxy Pattern.
+
+Code: Build a mini-Redux store from scratch (dispatch, subscribe, reducer) in <30 lines.
+
+Month 2: Advanced Next.js & Edge Computing
+Days 31–45: Server-Side Rendering (SSR) & Streaming.
+
+Code: Implement a Node.js server that streams HTML chunks to the browser using res.write().
+
+Days 46–60: The Edge & Caching Strategies.
+
+Concept: Stale-while-revalidate, CDNs.
+
+Code: Write a Service Worker that intercepts fetch requests and implements a custom caching strategy.
+
+Month 3: System Design & Security
+Days 61–75: Authentication & Authorization.
+
+Concept: JWT structure, OAuth2 flows, RBAC.
+
+Code: Write a JWT signing and verification algorithm without libraries (using crypto module).
+
+Days 76–90: Distributed Systems Basics.
+
+Concept: Load Balancing, Rate Limiting.
+
+Code: Implement a "Leaky Bucket" rate limiter algorithm in a middleware function.
+
+Phase 2: The Next Frontier – AI & ML (Days 91–210)
+Goal: Stop calling APIs and start understanding the "Brain." Focus on the math and the architecture.
+
+Month 4: The Mathematical Bridge (JS to Python)
+Days 91–100: Linear Algebra for Coders.
+
+Concept: Vectors, Matrices, Dot Products.
+
+Code: Write a Python script to perform matrix multiplication from scratch (nested loops vs. NumPy).
+
+Days 101–110: Calculus & Optimization.
+
+Concept: Gradients, Derivatives, Gradient Descent.
+
+Code: Implement a function that finds the minimum of a curve (y = x^2) using iterative steps.
+
+Days 111–120: Probability & Statistics.
+
+Concept: Distributions, Bayes' Theorem.
+
+Code: Write a Naive Bayes classifier from scratch to filter "spam" text strings.
+
+Month 5: Machine Learning Foundations
+Days 121–135: Supervised Learning.
+
+Concept: Linear Regression, Decision Trees.
+
+Code: Build a Linear Regression class that fits a line to data points using the Normal Equation.
+
+Days 136–150: Neural Networks (The Perceptron).
+
+Concept: Weights, Biases, Activation Functions (Sigmoid/ReLU).
+
+Code: Build a single neuron in Python that can learn the OR logic gate.
+
+Month 6: Deep Learning & Transformers
+Days 151–165: Backpropagation.
+
+Concept: Chain Rule, Loss Functions.
+
+Code: Implement the backprop step for a 2-layer network.
+
+Days 166–180: The Transformer Architecture (Attention).
+
+Concept: Self-Attention mechanism ("The Query, Key, Value").
+
+Code: Write the "Scaled Dot-Product Attention" mathematical formula as a Python function.
+
+Month 7: GenAI Engineering (The Application Layer)
+Days 181–195: Embeddings & Vector Databases.
+
+Concept: High-dimensional space, Cosine Similarity.
+
+Code: Write a script to calculate cosine similarity between two manual vectors to find "semantic" closeness.
+
+Days 196–210: RAG (Retrieval Augmented Generation).
+
+Code: Build a tiny RAG system: Read a text file, chunk it, retrieve relevant chunks based on a query keyword.
+
+Phase 3: The Future – Quantum Computing (Days 211–300)
+Goal: Learn the logic of nature. This is the hardest part, so we focus on logic over complex physics.
+
+Month 8: Quantum Fundamentals (Qiskit)
+Days 211–220: Qubits vs. Bits.
+
+Concept: Superposition, The Bloch Sphere.
+
+Code: Use Qiskit to create a Single Qubit circuit and visualize it on a Bloch sphere.
+
+Days 221–230: Quantum Gates.
+
+Concept: Hadamard (H), Pauli-X/Y/Z, CNOT.
+
+Code: Write a circuit that creates the "Bell State" (Entanglement) – the "Hello World" of Quantum.
+
+Month 9: Quantum Algorithms
+Days 231–245: Quantum Teleportation.
+
+Concept: Transferring state without transferring matter.
+
+Code: Implement the Teleportation protocol circuit in Qiskit.
+
+Days 246–260: Grover’s Algorithm (Search).
+
+Concept: Amplitude Amplification (Finding a needle in a haystack).
+
+Code: Build a circuit that finds the state |11> in a 2-qubit system.
+
+Month 10: Hybrid Computing
+Days 261–280: Variational Quantum Eigensolvers (VQE).
+
+Concept: Using Classical CPUs to optimize Quantum circuits.
+
+Code: Simulate a simple VQE loop (Hybrid Web + Quantum).
+
+Phase 4: The Convergence (Days 301–360)
+Goal: Merge all three fields. Build things no one else can build.
+
+Month 11: The "Quantum-AI-Web" Stack
+Days 301–330: Project "Q-Brain".
+
+Task: Build a Next.js Web App (Web) that uses a Neural Network (AI) to optimize a Quantum Circuit (Quantum) via an API (IBM Quantum).
+
+Code Focus: API design, Async handling of long-running quantum jobs.
+
+Month 12: Final Review & Contribution
+Days 331–360: Open Source & Paper Writing.
+
+Task: Contribute to an open-source project in each field (e.g., fix a doc in Qiskit, a bug in LangChain).
+
+Final Code: Refactor your best 15-line snippets from the year into a single "Cheat Sheet" library.
