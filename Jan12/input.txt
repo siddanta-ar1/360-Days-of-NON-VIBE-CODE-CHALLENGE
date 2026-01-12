@@ -1,0 +1,21 @@
+Siddanta
+fdhf kadfkjadj fdafd
+dfd
+a fdaofh adlfj
+dfmdk hdkafjdaf
+fkd fdakfdiadjl
+df dkafoiqf oejfopiah fijdkhoidjvkdidhoifhdufahdfhadufhehfueh pud
+dof akfid h
+NT',
+  syscall: 'open',
+  path: 'input.txt'
+}
+
+Node.js v24.12.0
+mac-MacBookAir%NT',
+  syscall: 'open',
+  path: 'input.txt'
+}
+
+Node.js v24.12.0
+mac-MacBookAir%
