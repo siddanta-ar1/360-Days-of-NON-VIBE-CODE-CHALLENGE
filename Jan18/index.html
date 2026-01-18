@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+    <body>
+        <h1>CORS Test</h1>
+        <button onclick="getData()">Get Secret Data</button>
+        <p id="output"></p>
+        <script>
+            async function getData() {
+                try {
+                    const response = await fetch("http://localhost:3000");
+                    const data = await response.json();
+                    document.getElementById("output").innerText = data.message;
+                } catch (err) {
+                    console.error(err);
+                    document.getElementById("output").innerText =
+                        "BLOCKED BY BROWSER (Check Console) ";
+                }
+            }
+        </script>
+    </body>
+</html>
