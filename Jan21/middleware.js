@@ -18,7 +18,7 @@ const apiKeyMiddleware = (req, res, next) => {
     next();
   } else {
     console.log("Access Denied.");
-    res.status(403).json({ error: "FOrbidden: Wrong Key" });
+    res.status(403).json({ error: "Forbidden: Wrong Key" });
   }
 };
 
