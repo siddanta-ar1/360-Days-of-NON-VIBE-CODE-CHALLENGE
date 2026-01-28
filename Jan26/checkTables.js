@@ -1,5 +1,5 @@
 // Day26/createTable.js
-const db = require("./config/db"); // This looks for config/db.js in the current folder
+const db = require("../Jan27/config/db"); // This looks for config/db.js in the current folder
 
 const createTableQuery = `
     CREATE TABLE IF NOT EXISTS users (

@@ -1,0 +1,27 @@
+{
+  "name": "360-days-of-non-vibe-code-challenge",
+  "version": "1.0.0",
+  "description": "The 360 Days of NON-VIBE-CODE-CHALLENGE is a rigorous, year-long self-improvement program designed to transform a developer from a \"Framework User\" to a \"Framework Architect\". The challenge runs from November 18, 2025, to November 18, 2026, requiring 1 to 1.5 hours of deep work daily.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siddanta-ar1/360-Days-of-NON-VIBE-CODE-CHALLENGE.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/siddanta-ar1/360-Days-of-NON-VIBE-CODE-CHALLENGE/issues"
+  },
+  "homepage": "https://github.com/siddanta-ar1/360-Days-of-NON-VIBE-CODE-CHALLENGE#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "express": "^5.2.1",
+    "joi": "^18.0.2",
+    "pg": "^8.17.2"
+  }
+}
