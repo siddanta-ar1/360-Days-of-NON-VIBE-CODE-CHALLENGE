@@ -59,4 +59,12 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const getProfile = async (req, res) => {
+  res.json({
+    success: true,
+    message: "Welcom to the VIP section.",
+    user: req.user,
+  });
+};
+
+module.exports = { register, login, getProfile };
