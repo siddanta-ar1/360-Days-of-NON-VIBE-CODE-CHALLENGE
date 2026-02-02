@@ -2,6 +2,17 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+const uploadProfilePic = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "Please upload a file" });
+  }
+  res.json({
+    success: true,
+    message: "File uploaded successfully!",
+    fileUrl: `/uploads/${req.file.filename}`,
+  });
+};
+
 const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -26,36 +37,33 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    console.log("1. Login Request received:", req.body);
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      console.log("Missing email or password");
-      return res.status(400).send("Missing data");
-    }
-
+    // 1. Check User
     const user = await userModel.findUserByEmail(email);
-    console.log("2. User found in DB:", user);
+    if (!user) return res.status(401).json({ message: "Invalid Credentials" });
 
-    if (!user) {
-      console.log("User not found in DB");
-      return res.status(401).json({ message: "Invalid Credentials" });
-    }
-
-    console.log("3. Comparing password....");
-    console.log(" Input: ", password);
-    console.log(" Stored Hash: ", user.password);
-
+    // 2. Check Password
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("4. Password Match Result: ", isMatch);
-
-    if (!isMatch) {
+    if (!isMatch)
       return res.status(401).json({ message: "Invalid Credentials" });
-    }
-    res.json({ success: true, user: user });
+
+    // --- 3. GENERATE TOKEN (This was missing!) ---
+    const token = jwt.sign(
+      { id: user.id, username: user.username, email: user.email },
+      "my_secret_key_123",
+      { expiresIn: "1h" },
+    );
+
+    // 4. Send Token in Response
+    res.json({
+      success: true,
+      message: "Login Successful",
+      token: token, // <--- HERE IT IS!
+      user: { id: user.id, username: user.username },
+    });
   } catch (err) {
-    console.error(" The crash happened here:");
-    console.err(err);
+    console.error(err); // Fixed your 'console.err' typo too
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -68,4 +76,4 @@ const getProfile = async (req, res) => {
   });
 };
 
-module.exports = { register, login, getProfile };
+module.exports = { register, login, getProfile, uploadProfilePic };
