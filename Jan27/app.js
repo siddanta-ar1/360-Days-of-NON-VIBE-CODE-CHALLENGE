@@ -3,6 +3,7 @@ const app = express();
 const userController = require("./controllers/userController");
 const protect = require("./middleware/authMiddleware");
 const upload = require("./middleware/uploadMiddleware");
+const path = require("path");
 app.use(express.json());
 
 app.post("/register", userController.register);
@@ -13,6 +14,7 @@ app.post(
   upload.single("profilePic"),
   userController.uploadProfilePic,
 );
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.listen(3000, () => {
   console.log("Server running on port 3000");
