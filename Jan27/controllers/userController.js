@@ -1,16 +1,30 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const db = require("../config/db");
 
 const uploadProfilePic = async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "Please upload a file" });
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Please upload a file" });
+    }
+    const fileUrl = `/upload/${req.file.filename}`;
+    const userId = req.user.id;
+
+    const query =
+      "UPDATE users SET profile_pic = $1 WHERE id = $2 RETURNING username, email, profile_pic";
+    const result = await db.query(query, [fileUrl, userId]);
+    res.json({
+      success: true,
+      message: "Profile updated!",
+      user: result.rows[0],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Server Error",
+    });
   }
-  res.json({
-    success: true,
-    message: "File uploaded successfully!",
-    fileUrl: `/uploads/${req.file.filename}`,
-  });
 };
 
 const register = async (req, res) => {

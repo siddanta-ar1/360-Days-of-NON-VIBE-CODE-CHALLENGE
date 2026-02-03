@@ -11,6 +11,7 @@ app.post("/login", userController.login);
 app.get("/profile", protect, userController.getProfile);
 app.post(
   "/upload",
+  protect,
   upload.single("profilePic"),
   userController.uploadProfilePic,
 );
