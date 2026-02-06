@@ -28,16 +28,20 @@ const getAllPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-
     const offset = (page - 1) * limit;
+
+    const search = req.query.search || "";
+
     const query = `
-      SELECT posts.id, posts.title, posts.content, users.username
+      SELECT posts.id, posts.title, posts.content, users.username, posts.created_at
       FROM posts
       JOIN users ON posts.user_id = users.id
       ORDER BY posts.created_at DESC
       LIMIT $1 OFFSET $2;
       `;
-    const result = await db.query(query, [limit, offset]);
+
+    const searchPattern = `%${search}%`;
+    const result = await db.query(query, [limit, offset], searchPattern);
     res.json({
       success: true,
       page: page,
