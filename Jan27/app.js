@@ -19,6 +19,8 @@ app.post(
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.post("/posts", protect, postController.createPost);
 app.get("/posts", postController.getAllPosts);
+app.put("/posts/:id", protect, postController.updatePost);
+app.delete("/posts/:id", protect, postController.deletePost);
 
 app.listen(3000, () => {
   console.log("Server running on port 3000");

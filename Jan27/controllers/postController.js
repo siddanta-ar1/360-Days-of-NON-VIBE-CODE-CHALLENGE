@@ -55,4 +55,58 @@ const getAllPosts = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getAllPosts };
+const updatePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, content } = req.body;
+    const userId = req.user.id;
+
+    const query = `
+      UPDATE posts
+      SET title = $1, content = $2
+      WHERE id = $3 AND user_id = $4
+      RETURNING *;
+      `;
+    const result = await db.query(query, [title, content, id, userId]);
+    if (result.rowCount === 0) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized or Post not found" });
+    }
+    res.json({
+      success: true,
+      message: "Post updated!",
+      post: result.rows[0],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const deletePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const query = `
+    DELETE FROM posts
+    WHERE id = $1 AND user_id = $2
+    RETURNING *;
+      `;
+    const result = await db.query(query, [id, userId]);
+    if (result.rowCount === 0) {
+      return res.status(403).json({
+        message: "Not authorized or Post not found",
+      });
+      res.json({
+        success: true,
+        message: "Post deleted successfully",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { createPost, getAllPosts, updatePost, deletePost };
