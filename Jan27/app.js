@@ -21,7 +21,7 @@ app.post("/posts", protect, postController.createPost);
 app.get("/posts", postController.getAllPosts);
 app.put("/posts/:id", protect, postController.updatePost);
 app.delete("/posts/:id", protect, postController.deletePost);
-
+app.post("/posts/:id/like", protect, postController.toggleLike);
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
