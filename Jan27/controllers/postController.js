@@ -29,11 +29,11 @@ const getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
-
     const search = req.query.search || "";
 
     const query = `
-      SELECT posts.id, posts.title, posts.content, users.username, posts.created_at
+      SELECT posts.id, posts.title, posts.content, users.username, posts.created_at,
+      (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS like_count
       FROM posts
       JOIN users ON posts.user_id = users.id
       ORDER BY posts.created_at DESC
