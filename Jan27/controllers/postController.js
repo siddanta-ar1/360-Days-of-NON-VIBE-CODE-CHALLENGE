@@ -34,8 +34,23 @@ const getAllPosts = async (req, res) => {
     const query = `
       SELECT posts.id, posts.title, posts.content, users.username, posts.created_at,
       (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS like_count
+
+      (
+      SELECT COALESCE(json_agg(
+      json_build_object(
+      'id', c.id,
+      'content', c.content,
+      'username', cu.username
+      )
+      ),'[]')
+      FROM comments c
+      JOIN users cu ON c.user_id = cu.id
+      WHERE c.post_id = posts.id
+      ) AS comments
+
       FROM posts
       JOIN users ON posts.user_id = users.id
+      WHERE posts.title ILIKE $3 OR posts.content ILIKE $3
       ORDER BY posts.created_at DESC
       LIMIT $1 OFFSET $2;
       `;
