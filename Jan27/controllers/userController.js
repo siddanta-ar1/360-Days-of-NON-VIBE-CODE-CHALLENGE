@@ -27,7 +27,7 @@ const uploadProfilePic = async (req, res) => {
   }
 };
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
     const saltRounds = 10;
@@ -40,12 +40,12 @@ const register = async (req, res) => {
       message: "User created in Database!",
       user: newUser,
     });
-  } catch (err) {
-    console.error(err);
-    if (err.code === "23505") {
-      return res.status(400).json({ message: "Email already exists" });
+    if (!email || !password) {
+      res.status(400);
+      throw new Error("Please add all fields");
     }
-    res.status(500).json({ message: "Server Error" });
+  } catch (err) {
+    next(err);
   }
 };
 
