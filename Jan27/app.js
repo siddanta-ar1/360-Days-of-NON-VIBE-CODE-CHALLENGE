@@ -6,7 +6,7 @@ const upload = require("./middleware/uploadMiddleware");
 const path = require("path");
 const postController = require("./controllers/postController");
 const commentController = require("./controllers/commentController");
-const { errorHanler } = require("./middleware/errorMiddleware");
+const errorHanler = require("./middleware/errorMiddleware");
 app.use(express.json());
 
 app.post("/register", userController.register);
