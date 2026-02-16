@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const logger = require("./utils/logger");
 const userController = require("./controllers/userController");
 const protect = require("./middleware/authMiddleware");
 const upload = require("./middleware/uploadMiddleware");
@@ -27,6 +28,7 @@ app.delete("/posts/:id", protect, postController.deletePost);
 app.post("/posts/:id/like", protect, postController.toggleLike);
 app.get("/posts/:id/comments", commentController.getPostComments);
 app.use(errorHanler);
+
 app.listen(3000, () => {
-  console.log("Server running on port 3000");
+  logger.info("Server running on port 3000");
 });
