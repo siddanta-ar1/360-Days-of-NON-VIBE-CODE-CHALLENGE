@@ -1,4 +1,5 @@
 const express = require("express");
+const helmet = require("helmet");
 const app = express();
 const logger = require("./utils/logger");
 const userController = require("./controllers/userController");
@@ -8,6 +9,7 @@ const path = require("path");
 const postController = require("./controllers/postController");
 const commentController = require("./controllers/commentController");
 const errorHanler = require("./middleware/errorMiddleware");
+app.use(helmet());
 app.use(express.json());
 
 app.post("/register", userController.register);
