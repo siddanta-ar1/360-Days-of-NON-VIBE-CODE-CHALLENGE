@@ -1,6 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
 const app = express();
+const { globalLimiter } = require("./middleware/limiter");
 const logger = require("./utils/logger");
 const userController = require("./controllers/userController");
 const protect = require("./middleware/authMiddleware");
@@ -11,6 +12,7 @@ const commentController = require("./controllers/commentController");
 const errorHanler = require("./middleware/errorMiddleware");
 app.use(helmet());
 app.use(express.json());
+app.use(globalLimiter);
 
 app.post("/register", userController.register);
 app.post("/login", userController.login);
