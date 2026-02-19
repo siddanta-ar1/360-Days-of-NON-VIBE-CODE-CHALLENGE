@@ -1,6 +1,19 @@
 const express = require("express");
 const helmet = require("helmet");
+const cors = require("cors");
+
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "https://scholarspoint.net",
+    "https://www.scholarspoint.net",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
 const app = express();
+app.use(cors(corsOptions));
 const { globalLimiter } = require("./middleware/limiter");
 const logger = require("./utils/logger");
 const userController = require("./controllers/userController");
