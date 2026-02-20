@@ -1,5 +1,6 @@
 const express = require("express");
 const { authLimiter } = require("./middleware/limiter");
+const { transferCredits } = require("../controllers/walletController");
 const router = express.Router();
 const {
   register,
@@ -15,5 +16,6 @@ router.post("/register", authLimiter, validate(registerSchema), register);
 router.post("/login", authLimiter, validate(loginSchema), login);
 
 router.get("/profile", protect, getProfile);
+router.post("/transfer", protect, transferCredits);
 
 module.exports = router;
