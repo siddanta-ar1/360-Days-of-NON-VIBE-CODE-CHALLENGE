@@ -1,4 +1,3 @@
-const { get } = require("../../Jan24/routes/userRoutes");
 const asyncHandler = require("express-async-handler");
 const db = require("../config/db");
 
