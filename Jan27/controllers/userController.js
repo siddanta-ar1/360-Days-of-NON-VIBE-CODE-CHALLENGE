@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../config/db");
 const asyncHandler = require("express-async-handler");
-
+const userService = require("../services/userService");
 // 1. Upload Profile Pic
 const uploadProfilePic = asyncHandler(async (req, res) => {
   if (!req.file) {
