@@ -26,9 +26,6 @@ const uploadProfilePic = asyncHandler(async (req, res) => {
 // 2. Register
 const register = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-
   const newUser = await userModel.createUser(username, email, hashedPassword);
 
   res.status(201).json({
