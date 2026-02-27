@@ -27,23 +27,23 @@ app.use(helmet());
 app.use(express.json());
 app.use(globalLimiter);
 
-app.post("/register", userController.register);
-app.post("/login", userController.login);
-app.get("/profile", protect, userController.getProfile);
+app.post("/api/v1/register", userController.register);
+app.post("/api/v1/login", userController.login);
+app.get("/api/v1/profile", protect, userController.getProfile);
 app.post(
-  "/upload",
+  "/api/v1/upload",
   protect,
   upload.single("profilePic"),
   userController.uploadProfilePic,
 );
-app.post("/posts/:id/comments", protect, commentController.addComment);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.post("/posts", protect, postController.createPost);
-app.get("/posts", postController.getAllPosts);
-app.put("/posts/:id", protect, postController.updatePost);
-app.delete("/posts/:id", protect, postController.deletePost);
-app.post("/posts/:id/like", protect, postController.toggleLike);
-app.get("/posts/:id/comments", commentController.getPostComments);
+app.post("/api/v1/posts/:id/comments", protect, commentController.addComment);
+app.use("/api/v1/uploads", express.static(path.join(__dirname, "uploads")));
+app.post("/api/v1/posts", protect, postController.createPost);
+app.get("/api/v1/posts", postController.getAllPosts);
+app.put("/api/v1/posts/:id", protect, postController.updatePost);
+app.delete("/api/v1/posts/:id", protect, postController.deletePost);
+app.post("/api/v1/posts/:id/like", protect, postController.toggleLike);
+app.get("/api/v1/posts/:id/comments", commentController.getPostComments);
 app.use(errorHanler);
 
 app.listen(3000, () => {
