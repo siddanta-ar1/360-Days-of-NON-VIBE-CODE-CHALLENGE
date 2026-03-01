@@ -61,32 +61,46 @@ const getAllPosts = asyncHandler(async (req, res) => {
 });
 
 const getPosts = asyncHandler(async (req, res) => {
-  const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 10;
+  const cursor = parseInt(req.query.cursor, 10);
+  let query;
+  let params;
 
-  const offset = (page - 1) * limit;
+  if (cursor) {
+    query = `
+      SELECT p.id, p.title, p.content, p.created_at, u.username
+      FROM posts p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.id < $1
+      ORDER BY p.id DESC
+      LIMIT $2;
+      `;
 
-  const query = `
-    SELECT p.id, p.title, p.content, p.created_at, u.username
-    FROM posts p
-    JOIN users u ON p.user_id = u.id
-    ORDER BY p.created_at DESC
-    LIMIT $1 OFFSET $2;
-    `;
-  const result = await db.query(query, [limit, offset]);
-  const countResult = await db.query("SELECT COUNT(*) FROM posts");
-  const totalPosts = parseInt(countResult.rows[0].count, 10);
-  const totalPages = Math.ceil(totalPosts / limit);
+    params = [cursor, limit];
+  } else {
+    query = `
+      SELECT p.id, p.title, p.content, p.created_at, u.username
+      FROM posts p
+      JOIN users u ON p.user_id = u.id
+      ORDER BY p.id DESC
+      LIMIT $1;
+      `;
+    params = [limit];
+  }
+
+  const result = await db.query(query, params);
+  const posts = result.rows;
+
+  const nextCursor = posts.length > 0 ? posts[posts.length - 1].id : null;
 
   res.json({
     success: true,
     metadata: {
-      currentPage: page,
       limit: limit,
-      totalPosts: totalPosts,
-      totalPages: totalPages,
+      nextCursor: nextCursor,
+      hasMore: posts.length === limit,
     },
-    posts: result.rows,
+    posts: posts,
   });
 });
 
