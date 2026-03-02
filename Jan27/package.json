@@ -4,7 +4,7 @@
   "description": "The 360 Days of NON-VIBE-CODE-CHALLENGE is a rigorous, year-long self-improvement program designed to transform a developer from a \"Framework User\" to a \"Framework Architect\". The challenge runs from November 18, 2025, to November 18, 2026, requiring 1 to 1.5 hours of deep work daily.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node app.js",
     "migrate": "node-pg-migrate"
   },
@@ -35,5 +35,8 @@
     "node-pg-migrate": "^8.0.4",
     "pg": "^8.18.0",
     "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
   }
 }
