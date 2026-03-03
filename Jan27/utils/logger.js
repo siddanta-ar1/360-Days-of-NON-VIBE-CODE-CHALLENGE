@@ -1,7 +1,10 @@
 const winston = require("winston");
 
+const isTesting = process.env.NODE_ENV === "test";
+
 const logger = winston.createLogger({
   level: "info",
+  silent: isTesting,
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json(),
