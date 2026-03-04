@@ -14,17 +14,17 @@ jobs:
       run:
         working-directory: ./Jan27
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: "20.x"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
 
-        - name: Install dependencies
-          run: npm Install
+      - name: Install dependencies
+        run: npm Install
 
-        - name: Run Jest Tests
-          run: npm test
+      - name: Run Jest Tests
+        run: npm test
