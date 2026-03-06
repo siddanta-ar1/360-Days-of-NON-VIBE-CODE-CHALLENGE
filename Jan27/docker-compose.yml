@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: jan27
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+api:
+  build: .
+  restart: always
+  ports:
+    - "3000:3000"
+  environment:
+    DATABASE_URL: postgres://postgres:root@db:5432/jan27
+    NODE_ENV: development
+  depends_on:
+
+volumes:
+  pgdata:
