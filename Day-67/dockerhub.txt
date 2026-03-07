@@ -1,0 +1,12 @@
+created docker hub account
+image = compiled containers
+login via terminal
+tagging the image we have
+as docker tag <api-name> <username>/<api-name>:v1.0.0
+
+then we have to push
+
+docker push <username>/<username>:v1.0.0
+
+
+dokerhub is   equivalent to github for compiled container called images
