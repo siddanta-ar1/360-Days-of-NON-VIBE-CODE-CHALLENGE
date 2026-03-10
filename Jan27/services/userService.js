@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel");
 const AppError = require("../utils/AppError");
+const generateToken = require("../utils/generateToken");
 
 const registerUser = async (username, email, password) => {
   const existingUser = await userModel.findUserByEmail(email);
@@ -12,8 +13,11 @@ const registerUser = async (username, email, password) => {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
   const newUser = await userModel.createUser(username, email, hashedPassword);
-
-  return newUser;
+  const token = generateToken(newUser.id);
+  return {
+    user: newUser,
+    token: token,
+  };
 };
 
 module.exports = { registerUser };
