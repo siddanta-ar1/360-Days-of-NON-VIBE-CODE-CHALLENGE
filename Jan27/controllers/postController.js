@@ -1,6 +1,28 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../config/db");
+const AppError = require("../utils/AppError");
 
+const deletePost = asyncHandler(async (req, res) => {
+  const postId = req.params.id;
+  const loggedInUserId = req.user.id;
+
+  const postResult = await db.query('SELECT * FROM posts WHERE id = $1', [post]);
+  const post = postResult.rows[0];
+
+  if (!post) {
+    throw new AppError("Post not found", 404);
+  }
+  if (post.user_id !== loggedInUserId) {
+    throw new AppError("You do not have permission to delete someone else's post." 403);
+  }
+
+  await db.query('DELETE FROM posts WHERE id = $1', [postId]);
+
+  res.json({
+    success: true,
+    message: "Post deleted successfully"
+  });
+});
 const createPost = asyncHandler(async (req, res) => {
   const { title, content } = req.body;
   const userId = req.user.id;
@@ -177,25 +199,6 @@ const updatePost = asyncHandler(async (req, res) => {
   });
 });
 
-const deletePost = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user.id;
-  const query = `
-    DELETE FROM posts
-    WHERE id = $1 AND user_id = $2
-    RETURNING *;
-      `;
-  const result = await db.query(query, [id, userId]);
-  if (result.rowCount === 0) {
-    return res.status(403).json({
-      message: "Not authorized or Post not found",
-    });
-    res.json({
-      success: true,
-      message: "Post deleted successfully",
-    });
-  }
-});
 
 const toggleLike = asyncHandler(async (req, res) => {
   const { id } = req.params;
