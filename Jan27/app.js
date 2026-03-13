@@ -1,6 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 
 const corsOptions = {
   origin: [
@@ -26,6 +27,20 @@ const errorHanler = require("./middleware/errorMiddleware");
 app.use(helmet());
 app.use(express.json());
 app.use(globalLimiter);
+
+const appLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: {
+    success: false,
+    message:
+      "Too many requests from this IP, please try again after 15 minutes",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use("/api", appLimiter);
 
 app.post("/api/v1/register", userController.register);
 app.post("/api/v1/login", userController.login);

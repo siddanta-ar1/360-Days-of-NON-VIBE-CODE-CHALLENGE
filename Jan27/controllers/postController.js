@@ -6,7 +6,7 @@ const deletePost = asyncHandler(async (req, res) => {
   const postId = req.params.id;
   const loggedInUserId = req.user.id;
 
-  const postResult = await db.query('SELECT * FROM posts WHERE id = $1', [post]);
+  const postResult = await db.query('SELECT * FROM posts WHERE id = $1', [postId]);
   const post = postResult.rows[0];
 
   if (!post) {
