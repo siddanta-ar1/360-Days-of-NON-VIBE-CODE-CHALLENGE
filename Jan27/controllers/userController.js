@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const db = require("../config/db");
 const asyncHandler = require("express-async-handler");
 const userService = require("../services/userService");
+const Redis = require('ioredis');
+const redis = new Redis({ host: "127.0.0.1", port: 6379 });
 // 1. Upload Profile Pic
 const uploadProfilePic = asyncHandler(async (req, res) => {
   if (!req.file) {
@@ -27,7 +29,10 @@ const uploadProfilePic = asyncHandler(async (req, res) => {
 const register = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
   const newUser = await userModel.createUser(username, email, hashedPassword);
-
+  
+  const job = JSON.stringify({ email: email, type: "Welcome" });
+  await redis.lpush("emailQueue", job);
+  
   res.status(201).json({
     success: true,
     message: "User created in Database!",
