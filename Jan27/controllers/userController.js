@@ -6,6 +6,7 @@ const asyncHandler = require("express-async-handler");
 const userService = require("../services/userService");
 const Redis = require('ioredis');
 const redis = new Redis({ host: "127.0.0.1", port: 6379 });
+const eventBus = require('./utils/eventBus');
 // 1. Upload Profile Pic
 const uploadProfilePic = asyncHandler(async (req, res) => {
   if (!req.file) {
@@ -33,6 +34,8 @@ const register = asyncHandler(async (req, res) => {
   const job = JSON.stringify({ email: email, type: "Welcome" });
   await redis.lpush("emailQueue", job);
   
+  eventBus.emit('user.registered', newUser);
+ 
   res.status(201).json({
     success: true,
     message: "User created in Database!",
