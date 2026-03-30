@@ -1,0 +1,17 @@
+config:
+  target: "http://localhost"
+  phase:
+    - duration: 30
+      arrivalRate: 50
+      rampTo: 300
+      name: "The Warm Up"
+
+    - duration: 30
+      arrivalRate: 300
+      name: "The 10k Surge"
+
+scenarios:
+  - name: "Students refreshing the feed"
+    flow:
+      - get:
+          url: "/api/v1/posts"
