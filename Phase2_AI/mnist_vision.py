@@ -1,3 +1,6 @@
+import matplotlib
+
+matplotlib.use("MacOSX")
 import matplotlib.pyplot as plt
 import torch
 import torchvision
