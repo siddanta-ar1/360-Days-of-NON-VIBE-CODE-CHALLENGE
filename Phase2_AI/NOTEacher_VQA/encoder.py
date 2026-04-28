@@ -8,20 +8,25 @@ print("Initializing NOTEacher Vision Encoder...")
 class VisionEncoder(nn.Module):
     def __init__(self, embed_dim):
         super().__init__()
+
         resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+
+        # Freeze backbone
         for param in resnet.parameters():
             param.requires_grad = False
 
-            modules = list(resnet.children())[:-1]
-            self.backbone = nn.Sequential(*modules)
-            self.projection = nn.Linear(resnet.fc.in_features, embed_dim)
+        # Remove final classification layer
+        modules = list(resnet.children())[:-1]
+        self.backbone = nn.Sequential(*modules)
 
-        def forward(self, images):
-            features = self.backbone(images)
-            features = features.view(features.size(0), -1)
-            visual_embedding = self.projection(features)
+        # Projection layer
+        self.projection = nn.Linear(resnet.fc.in_features, embed_dim)
 
-            return visual_embedding
+    def forward(self, images):
+        features = self.backbone(images)
+        features = features.view(features.size(0), -1)
+        visual_embedding = self.projection(features)
+        return visual_embedding
 
 
 if __name__ == "__main__":
@@ -34,7 +39,7 @@ if __name__ == "__main__":
     visual_thoughts = encoder(fake_student_notes)
 
     print("Extraction Complete!")
-    print(f"Visual Embeddign Shape: {visual_thoughts.shape} (Bactch, Embed Dim)")
+    print(f"Visual Embeddign Shape: {visual_thoughts.shape} (Batch, Embed Dim)")
     print(
         "These 256 numbers contain the entire structure meaning of the image, ready for the Transformer."
     )
