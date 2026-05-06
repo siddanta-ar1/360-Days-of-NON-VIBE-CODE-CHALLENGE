@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-print("Initilizing NOTEacher Multimodal Decoder...")
+print("Upgrading Decoder with Regularization  Protocols....")
 
 
 class VQADecoderBlock(nn.Module):
@@ -11,29 +11,36 @@ class VQADecoderBlock(nn.Module):
         self.self_attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)
         self.norm1 = nn.LayerNorm(embed_dim)
 
+        self.dropout1 = nn.Dropout(dropout_prob)
+
         self.cross_attn = nn.MultiheadAttentions(embed_dim, num_heads, batch_first=True)
         self.norm2 = nn.LayerNorm(embed_dim)
+
+        self.dropout2 = nn.Dropout(dropout_prob)
 
         self.feed_forward = nn.Sequential(
             nn.Linear(embed_dim, embed_dim * 4),
             nn.ReLU(),
+            nn.Dropout(dropout_prob),
             nn.Linear(embed_dim * 4, embed_dim),
         )
         self.norm3 = nn.LayerNorm(embed_dim)
+
+        self.dropout3 = nn.Dropout(dropout_prob)
 
     def forward(self, text_embeddings, visual_embeddings):
         attn1, _ = self.self_attn(
             query=text_embeddings, key=text_embeddings, value=text_embeddings
         )
-        x = self.norm1(attn1 + text_embeddings)
+        x = self.norm1(self.dropout1(attn1) + text_embeddings)
 
         attn2, _ = self.cross_attn(
             query=x, key=visual_embeddings, value=visual_embeddings
         )
-        x = self.norm2(attn2 + x)
+        x = self.norm2(self.dropout2(attn2) + x)
 
         ff_out = self.feed_forward(x)
-        out = self.norm3(ff_out + x)
+        out = self.norm3(self.dropout3(ff_out) + x)
 
         return out
 

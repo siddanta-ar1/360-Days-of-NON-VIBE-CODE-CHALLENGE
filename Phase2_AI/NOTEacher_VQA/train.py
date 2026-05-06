@@ -28,7 +28,7 @@ dataloader = DataLoader(dataset, batch_size=2, collate_fn=vqa_collate_fn)
 model = NOTEacherVQA(vocab_size, embed_dim, num_heads)
 criterion = nn.CrossEntropyLoss(ignore_index=pad_token_id)
 
-optimzer = optim.AdamW(model.parameters(), lr=0.001)
+optimzer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.01)
 
 epochs = 3
 print("\n IGNITING TRAINING SEQUENCE...\n")
@@ -53,7 +53,7 @@ for epoch in range(epochs):
         total_loss += loss.item()
 
         avg_loss = total_loss / len(dataloader)
-        print(f"Epoch [{epch + 1}/{epochs}] Completed | Average Loss: {avg_loss:.4f}")
+        print(f"Epoch [{epoch + 1}/{epochs}] Completed | Average Loss: {avg_loss:.4f}")
 
         checkpoint_path = f"noteacher_epoch_{epoch + 1}.pth"
         torch.save(model.state_dist(), checkpoint_path)
