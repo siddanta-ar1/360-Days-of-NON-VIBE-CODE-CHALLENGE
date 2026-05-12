@@ -1,0 +1,10 @@
+#STAGE 1
+FROM python:3.11-slim AS builder
+RUN apt-get install build-essential
+RUN python -m venv /opt/venv
+RUN pip install -r requirements.txt --extra-index-url [https://download.pytorch.org/whl/cpu](https://download.pytorch.org/whl/cpu)
+
+#STAGE 2
+FROM python:3.11-slim AS runner
+COPY --from=builder /opt/venv /opt/venv
+COPY ..
