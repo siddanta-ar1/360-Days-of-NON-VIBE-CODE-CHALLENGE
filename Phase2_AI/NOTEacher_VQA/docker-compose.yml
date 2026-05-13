@@ -1,0 +1,25 @@
+services:
+  vqa_api:
+    build:
+      context:
+        dockerfile: Dockerfile.prod
+    container_name: noteacher_backend
+    ports:
+      - "8000:8000"
+    networks:
+      - noteacher_net
+    restart: unless-stopped
+
+  mock_frontend:
+    image: nginx:alpine
+    container_name: noteacher_frontend
+    ports:
+      - "3000:80"
+    networks:
+      - noteacher_net
+    depends_on:
+      - vqa_api
+
+networks:
+  noteacher_net:
+    driver: bridge
