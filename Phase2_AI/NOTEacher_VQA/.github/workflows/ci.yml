@@ -1,0 +1,31 @@
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+        -name: Verify Multi-Stage Docker Build
+        run: |
+          echo "Attempting to build production container from scratch..."
+          docker build -t noteacher-api:ci-test -f Dockerfile.prod .
+          echo "Architecture verified! Container builds successfully."
+
+          - name: Test ONNX Inference Engine
+            run: |
+             pip install onnxruntime numpy
+             if [ -f "noteacher_vqa.onnx"]; then
+               python onnx_inference.py
+             else
+               echo "No ONNX file found in repo. Skipping inference test."
+             fi
