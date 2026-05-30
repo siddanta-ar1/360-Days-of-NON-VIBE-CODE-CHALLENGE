@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -88,20 +92,31 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-8 bg-slate-950 text-slate-200 font-sans">
       <div className="z-10 max-w-3xl w-full flex-col flex gap-4 h-[75vh] overflow-y-auto border border-slate-800 rounded-xl p-6 bg-slate-900 shadow-2xl">
-        {/* Chat Log (Unchanged from yesterday) */}
         <div className="flex flex-col gap-4 flex-grow">
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`p-4 rounded-lg max-w-[80%] ${
+              className={`p-4 rounded-lg max-w-[80%] overflow-x-auto ${
                 msg.role === "user"
                   ? "bg-blue-600 text-white self-end"
                   : msg.role === "system"
                     ? "bg-slate-800 text-slate-400 self-center text-sm border border-slate-700"
-                    : "bg-slate-800 text-slate-200 self-start border border-slate-700"
+                    : "bg-slate-800 text-slate-200 self-start border border-slate-700 prose prose-invert max-w-none"
               }`}
             >
-              {msg.content}
+              {msg.role === "ai" ? (
+                // THE RENDERING ENGINE
+                <ReactMarkdown
+                  remarkPlugins={[remarkMath]}
+                  rehypePlugins={[rehypeKatex]}
+                  className="text-sm md:text-base leading-relaxed"
+                >
+                  {msg.content}
+                </ReactMarkdown>
+              ) : (
+                // Users and System messages just get standard text
+                msg.content
+              )}
             </div>
           ))}
         </div>
