@@ -33,62 +33,69 @@ export default function Home() {
     const userContent = imageFile
       ? `[Attached Image: ${imageFile.name}] ${input}`
       : input;
-    setMessages((prev) => [...prev, { role: "user", content: userContent }]);
+
+    // 1. Add User Message and an EMPTY AI message that we will slowly fill up
     setMessages((prev) => [
       ...prev,
-      { role: "system", content: "Processing Multimodal Payload..." },
+      { role: "user", content: userContent },
+      { role: "ai", content: "" }, // This empty string is our canvas
     ]);
 
-    // Clear the input fields immediately for better UX
     setInput("");
     setImageFile(null);
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     try {
-      // 3. THE MULTIPART ENVELOPE
-      // We construct a FormData object to hold binary files and strings together
       const formData = new FormData();
       formData.append("question", input || "What is in this image?");
+      if (imageFile) formData.append("image", imageFile);
 
-      // If the user attached an image, append the raw File blob
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
-
-      // 4. THE HTTP POST
-      // Notice we do NOT set 'Content-Type' manually.
-      // The browser automatically sets it to 'multipart/form-data' when it sees FormData!
-      const response = await fetch("http://127.0.0.1:8000/ask", {
+      // 2. Fetch from a new streaming endpoint on our backend
+      const response = await fetch("http://127.0.0.1:8000/ask_stream", {
         method: "POST",
         body: formData,
       });
 
-      const data = await response.json();
+      if (!response.body)
+        throw new Error("ReadableStream not supported in this browser.");
 
-      // 5. Render AI Response
-      setMessages((prev) => {
-        const filtered = prev.filter(
-          (msg) => msg.content !== "Processing Multimodal Payload...",
-        );
-        return [...filtered, { role: "ai", content: data.answer }];
-      });
+      // 3. THE STREAM READER
+      // We grab the raw binary data stream from the network connection
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let streamedResponse = "";
+
+      // 4. THE CONSUMPTION LOOP
+      while (true) {
+        // Read the next chunk of binary data sent by the Python server
+        const { done, value } = await reader.read();
+
+        // If the server closes the connection, the stream is finished
+        if (done) break;
+
+        // Decode the binary bytes into a Javascript String
+        const textChunk = decoder.decode(value, { stream: true });
+        streamedResponse += textChunk;
+
+        // 5. UPDATE REACT STATE IN REAL-TIME
+        // We update the VERY LAST message in our array (the empty AI canvas)
+        setMessages((prev) => {
+          const updatedMessages = [...prev];
+          updatedMessages[updatedMessages.length - 1].content =
+            streamedResponse;
+          return updatedMessages;
+        });
+      }
     } catch (error) {
       setMessages((prev) => {
-        const filtered = prev.filter(
-          (msg) => msg.content !== "Processing Multimodal Payload...",
-        );
-        return [
-          ...filtered,
-          {
-            role: "system",
-            content: "Connection Error. Is the Python backend running?",
-          },
-        ];
+        const updatedMessages = [...prev];
+        updatedMessages[updatedMessages.length - 1].content =
+          "Error connecting to streaming backend.";
+        return updatedMessages;
       });
     }
   };
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-8 bg-slate-950 text-slate-200 font-sans">
       <div className="z-10 max-w-3xl w-full flex-col flex gap-4 h-[75vh] overflow-y-auto border border-slate-800 rounded-xl p-6 bg-slate-900 shadow-2xl">
