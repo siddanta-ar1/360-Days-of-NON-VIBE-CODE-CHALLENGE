@@ -52,10 +52,13 @@ export default function Home() {
       if (imageFile) formData.append("image", imageFile);
 
       // 2. Fetch from a new streaming endpoint on our backend
-      const response = await fetch("http://127.0.0.1:8000/ask_stream", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://vqa-engine-xyx123.run.app/ask_stream",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       if (!response.body)
         throw new Error("ReadableStream not supported in this browser.");
