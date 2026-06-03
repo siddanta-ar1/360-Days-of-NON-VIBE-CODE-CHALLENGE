@@ -9,7 +9,49 @@ export default function Home() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(true);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
 
+    // 1. FETCH CHAT HISTORY ON LOAD
+    useEffect(() => {
+      if (!user) return;
+
+      const loadHistory = async () => {
+        // Because we enabled RLS, this simple query is perfectly secure!
+        // Supabase automatically applies the auth.uid() filter in the background.
+        const { data: chatData } = await supabase
+          .from('chats')
+          .select('id')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (chatData && chatData.length > 0) {
+          const chatId = chatData[0].id;
+          setCurrentChatId(chatId);
+
+          // Fetch the messages for this chat
+          const { data: messageData } = await supabase
+            .from('messages')
+            .select('role, content')
+            .eq('chat_id', chatId)
+            .order('created_at', { ascending: true });
+
+          if (messageData) {
+            setMessages(messageData);
+          }
+        } else {
+          // Create a new chat thread if they have none
+          const { data: newChat } = await supabase
+            .from('chats')
+            .insert([{ user_id: user.id, title: 'Session 1' }])
+            .select()
+            .single();
+
+          if (newChat) setCurrentChatId(newChat.id);
+        }
+      };
+
+      loadHistory();
+    }, [user]);
   // 1. CHECK SESSION ON BOOT
   useEffect(() => {
     // Check if the user is already logged in (token stored in local storage)
