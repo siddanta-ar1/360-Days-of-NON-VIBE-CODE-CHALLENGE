@@ -1,88 +1,63 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import * as ort from 'onnxruntime-web';
+import { useState, useEffect, useRef } from 'react';
 
 export default function LocalEngine() {
-  const [session, setSession] = useState<ort.InferenceSession | null>(null);
-  const [status, setStatus] = useState<string>('Initializing WebGL Backend...');
+  const [status, setStatus] = useState<string>('Booting Background Thread...');
   const [result, setResult] = useState<string | null>(null);
+  const workerRef = useRef<Worker | null>(null);
 
-  // 1. BOOT THE LOCAL AI ENGINE
+  // 1. SPAWN THE BACKGROUND THREAD
   useEffect(() => {
-    const loadModel = async () => {
-      try {
-        // We tell ONNX to use the user's local GPU via the WebGL execution provider
-        ort.env.wasm.numThreads = 1; 
-        
-        setStatus('Downloading Neural Weights to Browser...');
-        // This assumes you have a small model named 'lightweight_model.onnx' in your /public folder
-        const localSession = await ort.InferenceSession.create('/lightweight_model.onnx', {
-          executionProviders: ['webgl', 'wasm'] 
-        });
-        
-        setSession(localSession);
-        setStatus('Edge Engine Ready. Zero-latency compute online.');
-      } catch (err) {
-        setStatus('Failed to load local model. Check console.');
-        console.error(err);
-      }
+    // Create the worker pointing to our script
+    workerRef.current = new Worker(new URL('../../public/inference.worker.ts', import.meta.url));
+
+    // 2. LISTEN FOR REPLIES FROM THE WORKER
+    workerRef.current.onmessage = (event) => {
+      const { type, message, data } = event.data;
+
+      if (type === 'STATUS') setStatus(message);
+      if (type === 'RESULT') setResult(`Output Vector: [${data.slice(0, 4).join(', ')}...]`);
+      if (type === 'ERROR') setStatus(`Worker Error: ${message}`);
     };
 
-    loadModel();
+    return () => {
+      workerRef.current?.terminate(); // Clean up memory when component unmounts
+    };
   }, []);
 
-  // 2. EXECUTE LOCAL INFERENCE
-  const runLocalInference = async () => {
-    if (!session) return;
-    
-    setStatus('Computing locally via WebGL...');
-    const startTime = performance.now();
+  // 3. SEND DATA TO THE BACKGROUND
+  const runLocalInference = () => {
+    if (!workerRef.current) return;
 
-    try {
-      // Create a dummy input tensor (representing a user's mathematical query)
-      // In a real scenario, this is where your text tokenizer goes!
-      const inputTensor = new ort.Tensor('float32', new Float32Array([1.0, 2.0, 3.0, 4.0]), [1, 4]);
-      
-      const feeds: Record<string, ort.Tensor> = {};
-      feeds[session.inputNames[0]] = inputTensor;
+    setStatus('Sending payload to background thread...');
 
-      // Physically execute the neural network on the user's hardware
-      const outputData = await session.run(feeds);
-      const outputTensor = outputData[session.outputNames[0]];
-
-      const endTime = performance.now();
-      
-      setResult(`Output Vector: [${outputTensor.data.slice(0, 4).join(', ')}...]`);
-      setStatus(`Inference complete in ${(endTime - startTime).toFixed(2)}ms. Server cost: $0.00.`);
-    } catch (err) {
-      console.error(err);
-      setStatus('Inference failed.');
-    }
+    // Notice we do NOT await anything here.
+    // We fire the message and instantly free up the React thread!
+    workerRef.current.postMessage({ inputData: [1.0, 2.0, 3.0, 4.0] });
   };
 
-  // 3. BRIGHT & CLEAR UI AESTHETIC
   return (
     <div className="w-full max-w-2xl mx-auto mt-8 p-8 bg-white border border-slate-200 rounded-xl shadow-sm font-sans text-slate-800">
       <div className="border-b border-slate-100 pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-[#0055FF] tracking-tight">Edge Compute Module</h2>
-        <p className="text-sm text-slate-500 mt-1">Executing ONNX graphs via client-side WebGL</p>
+        <h2 className="text-2xl font-bold text-[#0055FF] tracking-tight">Non-Blocking Edge Compute</h2>
+        <p className="text-sm text-slate-500 mt-1">Executing ONNX graphs via Web Workers</p>
       </div>
 
       <div className="flex flex-col gap-6">
         <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
-          <span className="text-sm font-medium text-slate-600">Engine Status:</span>
-          <span className={`text-sm font-bold ${session ? 'text-emerald-600' : 'text-amber-500'}`}>
+          <span className="text-sm font-medium text-slate-600">Worker Status:</span>
+          <span className="text-sm font-bold text-[#0055FF] animate-pulse">
             {status}
           </span>
         </div>
 
-        <button 
+        {/* This button will never freeze while computing! */}
+        <button
           onClick={runLocalInference}
-          disabled={!session}
-          className="w-full py-4 bg-[#0055FF] hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors shadow-sm"
+          className="w-full py-4 bg-[#0055FF] hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-sm"
         >
-          Execute Local Pass
+          Execute Background Pass
         </button>
 
         {result && (
