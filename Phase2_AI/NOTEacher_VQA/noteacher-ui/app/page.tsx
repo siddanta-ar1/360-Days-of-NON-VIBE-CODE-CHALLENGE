@@ -1,6 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { telemetry } from './telemetry';
+
+// Inside your model caching logic:
+if (cachedModel) {
+  telemetry.log('INFO', 'ONNX_ENGINE', 'Cache hit: Model loaded from local database.', { cacheType: 'IndexedDB' });
+  return cachedModel;
+} else {
+  telemetry.log('WARN', 'ONNX_ENGINE', 'Cache miss: Initiating remote weight transmission.', { url: '/model.onnx' });
+  // fetch logic...
+}
 
 export default function Home() {
   const [input, setInput] = useState('');
