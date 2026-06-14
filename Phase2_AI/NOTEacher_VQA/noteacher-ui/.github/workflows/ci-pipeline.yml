@@ -1,0 +1,44 @@
+# .github/workflows/ci-pipeline.yml
+name: NOTEacher Frontend CI
+
+# 1. THE TRIGGER
+# This pipeline runs every time you push to the 'main' branch or open a Pull Request
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 2. THE JOBS
+jobs:
+  build-and-test:
+    # We use your preferred operating system for the runner
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step A: Checkout the code from your repository
+    - name: Checkout Codebase
+      uses: actions/checkout@v4
+
+    # Step B: Install Node.js
+    - name: Setup Node.js Environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm' # Caches dependencies to make future runs blazing fast
+
+    # Step C: Install your project dependencies
+    - name: Install Dependencies
+      run: npm ci # 'ci' is strictly better than 'install' for automated environments
+
+    # Step D: Run the Linter (Catches bad code style and unused variables)
+    - name: Run ESLint
+      run: npm run lint
+
+    # Step E: Verify the Build (Catches fatal Next.js compilation errors)
+    - name: Verify Production Build
+      run: npm run build
+      # We pass dummy environment variables just so the Next.js compiler doesn't crash during the build check
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: "https://dummy.supabase.co"
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy_key"
