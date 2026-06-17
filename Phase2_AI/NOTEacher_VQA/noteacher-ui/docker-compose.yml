@@ -1,0 +1,60 @@
+version: '3.8'
+
+# 1. THE VIRTUAL NETWORK
+# Docker will create an isolated bridge network. Containers inside this network
+# can talk to each other using their service names (e.g., 'http://backend:8000') 
+# instead of relying on fragile localhost IP addresses.
+networks:
+  noteacher_network:
+    driver: bridge
+
+# 2. THE MICROSERVICES
+services:
+
+  # Service A: The Edge Cache & Rate Limiter (Redis)
+  redis_cache:
+    image: redis:alpine
+    container_name: noteacher_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - noteacher_network
+    restart: always
+
+  # Service B: The AI Brain (FastAPI)
+  backend:
+    # This tells Compose to look for the Dockerfile we wrote on Day 169
+    build: 
+      context: ./NOTEacher_VQA
+      dockerfile: Dockerfile
+    container_name: noteacher_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+    networks:
+      - noteacher_network
+    # The backend relies on Redis for caching, so we force Docker to boot Redis first
+    depends_on:
+      - redis_cache
+    restart: on-failure
+
+  # Service C: The Presentation Layer (Next.js)
+  frontend:
+    build: 
+      context: ./noteacher-ui
+      # (Assuming you created a standard Next.js Dockerfile in this directory)
+      dockerfile: Dockerfile
+    container_name: noteacher_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # Notice how we point the frontend to the backend's internal container name!
+      - NEXT_PUBLIC_API_URL=http://backend:8000 
+      - UPSTASH_REDIS_REST_URL=http://redis_cache:6379
+    networks:
+      - noteacher_network
+    depends_on:
+      - backend
+    restart: on-failure
