@@ -1,0 +1,36 @@
+
+
+server {
+    # 1. THE FRONT DOOR
+    # Listen for standard web traffic on port 80
+    listen 80;
+    server_name your_domain_or_ip.com;
+
+    # 2. THE UI ROUTING
+    # Route all standard traffic (/) to the Next.js frontend container
+    location / {
+        proxy_pass http://localhost:3000;
+        
+        # Pass essential headers so Next.js knows the user's real IP address
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_addrs;
+        
+        # Required for WebSocket support (Next.js HMR and QZ Tray)
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    # 3. THE API ROUTING
+    # Route any traffic starting with /api/ directly to the Python backend container
+    location /api/ {
+        proxy_pass http://localhost:8000/;
+        
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        
+        # Crucial for preventing massive AI response payloads from timing out
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+    }
+}
