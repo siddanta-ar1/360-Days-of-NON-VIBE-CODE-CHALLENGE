@@ -42,3 +42,37 @@ jobs:
       env:
         NEXT_PUBLIC_SUPABASE_URL: "https://dummy.supabase.co"
         NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy_key"
+  
+  deploy-to-production:
+    name: Deploy to VPS
+    # CRITICAL: This job will ONLY run if the build and tests pass first!
+    needs: [build-and-test, test-backend]
+    # CRITICAL: Only deploy if the push was to the main branch
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Execute Remote SSH Commands
+      # We use a community-standard action to handle the SSH handshake
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          echo "🚀 Initiating Automated Deployment..."
+          
+          # Navigate to your project directory
+          cd /root/noteacher-vqa
+          
+          # Pull the latest verified code from GitHub
+          git pull origin main
+          
+          # Rebuild and restart the Docker containers in the background
+          # The --build flag ensures any new dependencies are installed
+          docker-compose up -d --build
+          
+          # Clean up old, unused Docker images to prevent the server hard drive from filling up
+          docker image prune -f
+          
+          echo "✅ Deployment Successful. Infrastructure updated."
