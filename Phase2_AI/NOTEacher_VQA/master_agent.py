@@ -4,7 +4,10 @@ from Phase2_AI.NOTEacher_VQA.onnx_inference import start_time
 
 print(" Booting NOTEacher master orchestration")
 print("Loading Subsystems...")
-
+# Inside your FastAPI application
+@app.get("/api/health")
+async def health_check():
+    return {"status": "nominal", "architecture": "online"}
 
 def run_master_pipeline(image_path, user_prompt):
     print("\n" + "=" * 60)
