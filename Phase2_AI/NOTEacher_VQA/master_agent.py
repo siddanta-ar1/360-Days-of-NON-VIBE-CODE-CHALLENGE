@@ -1,23 +1,18 @@
-# master_agent.py
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from socket_manager import manager
-
-app = FastAPI()
-
+# master_agent.py (Update your websocket_endpoint)
 @app.websocket("/ws/study-room")
 async def websocket_endpoint(websocket: WebSocket):
-    # 1. Handshake and hold connection
     await manager.connect(websocket)
     try:
-        # 2. The Infinite Listening Loop
         while True:
-            # Wait for incoming data from THIS specific client
+            # We receive the raw JSON string from the frontend
             data = await websocket.receive_text()
             
-            # Broadcast that data to EVERYONE in the room
-            await manager.broadcast(f"Student says: {data}")
+            # We instantly publish the raw string to Redis. 
+            # Zero parsing overhead = maximum performance.
+            await manager.broadcast_to_cluster(data)
             
     except WebSocketDisconnect:
-        # 3. Graceful Cleanup if the user closes their browser tab
         manager.disconnect(websocket)
-        await manager.broadcast("A student left the room.")
+        # We can construct a JSON payload for the disconnect event
+        disconnect_msg = '{"type": "system", "message": "A user disconnected."}'
+        await manager.broadcast_to_cluster(disconnect_msg)
