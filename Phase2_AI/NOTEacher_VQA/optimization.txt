@@ -1,0 +1,10 @@
+The Concept:
+An Architectural Audit is a structured review of your entire ecosystem. We categorize the system into four pillars and interrogate them for weaknesses, inefficiencies, and security vulnerabilities.
+
+The Edge (Next.js & Nginx): Are our bundle sizes optimized? Did we leave console.log statements in production? Are our Nginx timeouts properly configured?
+
+The Compute (FastAPI & Docker): Are our Docker images bloated? Is Python throwing silent warnings? Are we handling memory leaks?
+
+The State (Supabase & Redis): Are our relational queries missing indexes? Are our Row Level Security (RLS) policies watertight? Does Redis have an eviction policy?
+
+The Pipeline (GitHub Actions & AWS): Are our secrets rotated? Are the S3 backups actually working?
