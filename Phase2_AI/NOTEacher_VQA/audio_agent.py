@@ -1,6 +1,7 @@
 # audio_agent.py
 import io
 import tempfile
+import edge_tts
 from fastapi import WebSocket
 from faster_whisper import WhisperModel
 
@@ -36,3 +37,22 @@ async def handle_audio_stream(websocket: WebSocket):
                 
     except Exception as e:
         print(f"Audio Tunnel Closed: {e}")
+
+
+async def synthesize_and_stream(text: str, websocket: WebSocket):
+    """
+    Converts text to speech and streams the binary bytes directly down the socket.
+    We use the 'en-US-ChristopherNeural' voice for a clear, instructional tone.
+    """
+    print(f"🔊 Synthesizing audio for: {text[:30]}...")
+    
+    communicate = edge_tts.Communicate(text, "en-US-ChristopherNeural")
+    
+    # We yield the audio data as it is generated, streaming it chunk by chunk
+    async for chunk in communicate.stream():
+        if chunk["type"] == "audio":
+            # Push raw binary audio down the TCP tunnel
+            await websocket.send_bytes(chunk["data"])
+    
+    # Send a small JSON signal so the frontend knows the audio stream is finished
+    await websocket.send_text('{"type": "system", "event": "audio_complete"}')

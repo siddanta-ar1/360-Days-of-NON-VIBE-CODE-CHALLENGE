@@ -6,7 +6,7 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-
+  const audioContextRef = useRef<AudioContext | null>(null);
   const startRecording = useCallback(async () => {
     try {
       // 1. HARDWARE PERMISSION
@@ -61,6 +61,41 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
       setIsRecording(false);
     }
   }, [isRecording]);
-
+  socket.onmessage = async (event) => {
+  // 1. Check if the incoming payload is raw binary (Blob)
+  if (event.data instanceof Blob) {
+    if (!audioContextRef.current) {
+      // Initialize the browser's audio engine on the first interaction
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    
+    const context = audioContextRef.current;
+    
+    // 2. Decode the incoming bytes into an AudioBuffer
+    const arrayBuffer = await event.data.arrayBuffer();
+    
+    try {
+      const audioBuffer = await context.decodeAudioData(arrayBuffer);
+      
+      // 3. Play the buffer immediately
+      const source = context.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(context.destination);
+      source.start();
+    } catch (e) {
+      console.error("Audio decoding failed:", e);
+    }
+  } 
+  // 4. Handle standard text/JSON messages
+  else if (typeof event.data === 'string') {
+    const textData = event.data;
+    if (textData.includes('"audio_complete"')) {
+      console.log("Audio stream finished.");
+    } else {
+      // It's a standard chat message, render it to the UI
+      onTranscription(textData);
+    }
+  }
+};
   return { isRecording, startRecording, stopRecording };
 }
