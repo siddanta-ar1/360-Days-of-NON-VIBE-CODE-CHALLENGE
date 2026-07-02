@@ -1,48 +1,67 @@
-# master_agent.py (The Agentic Loop)
-async def generate_agentic_response(messages: list):
-    # FIRST PASS: Ask the LLM to think
+# master_agent.py
+import json
+from openai import AsyncOpenAI
+from agents.swarm_profiles import MATH_AGENT_PROMPT, CODE_AGENT_PROMPT
+
+client = AsyncOpenAI()
+
+# Define the Supervisor's schema for determining handoffs
+ROUTER_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "handoff_to_specialist",
+            "description": "Routes the user's query to the most capable specialized sub-agent.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "target_agent": {
+                        "type": "string",
+                        "enum": ["math_agent", "code_agent"],
+                        "description": "The destination agent profile specializing in the query type."
+                    }
+                },
+                "required": ["target_agent"],
+            },
+        }
+    }
+]
+
+async def orchestrate_swarm(user_query: str):
+    print(f"📡 Ingress payload received: '{user_query}'")
+    
+    # Initialize orchestration tracking with the Supervisor Agent
+    conversation_history = [
+        {"role": "system", "content": "You are the Central Supervisor Router. Analyze the request and delegate to the correct specialist via handoff_to_specialist."},
+        {"role": "user", "content": user_query}
+    ]
+
+    # 1. EVALUATE INTENT
     response = await client.chat.completions.create(
         model="gpt-4o",
-        messages=messages,
-        tools=AGENT_TOOLS,
-        tool_choice="auto", # Let the AI decide if a tool is needed
+        messages=conversation_history,
+        tools=ROUTER_TOOLS,
+        tool_choice={"type": "function", "function": {"name": "handoff_to_specialist"}} # Force routing valuation
     )
-    
-    response_message = response.choices[0].message
-    
-    # 2. THE INTERCEPT
-    # Check if the LLM decided it needs to use a tool
-    tool_calls = response_message.tool_calls
-    
-    if tool_calls:
-        # Append the AI's tool request to the memory
-        messages.append(response_message)
-        
-        # 3. THE EXECUTION
-        for tool_call in tool_calls:
-            if tool_call.function.name == "safe_math_eval":
-                # Parse the JSON arguments provided by the AI
-                args = json.loads(tool_call.function.arguments)
-                
-                # RUN THE LOCAL PYTHON CODE
-                computation_result = safe_math_eval(args["expression"])
-                
-                # Append the deterministic result back to the conversation
-                messages.append({
-                    "tool_call_id": tool_call.id,
-                    "role": "tool",
-                    "name": "safe_math_eval",
-                    "content": computation_result,
-                })
-        
-        # 4. THE SYNTHESIS (SECOND PASS)
-        # Send the conversation back to the LLM so it can read the computation result
-        final_response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-        )
-        return final_response.choices[0].message.content
-        
-    else:
-        # No tools needed, just return the standard text response
-        return response_message.content
+
+    tool_call = response.choices[0].message.tool_calls[0]
+    arguments = json.loads(tool_call.function.arguments)
+    target = arguments["target_agent"]
+
+    print(f"🔀 Programmatic Handoff Triggered: -> {target.upper()}")
+
+    # 2. CONTEXT CONTEXT SWITCH & SUB-AGENT INVOKATION
+    # We swap the system prompt completely to clear context contamination
+    if target == "math_agent":
+        conversation_history[0] = {"role": "system", "content": MATH_AGENT_PROMPT}
+    elif target == "code_agent":
+        conversation_history[0] = {"role": "system", "content": CODE_AGENT_PROMPT}
+
+    # 3. EXECUTE THE WORKLOAD WITH THE SPECIALIST
+    final_execution = await client.chat.completions.create(
+        model="gpt-4o",
+        messages=conversation_history
+        # Here you would attach ONLY the specific tools bound to that target sub-agent
+    )
+
+    return final_execution.choices[0].message.content
