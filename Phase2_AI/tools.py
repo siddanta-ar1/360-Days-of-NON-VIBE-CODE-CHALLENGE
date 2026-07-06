@@ -1,44 +1,57 @@
 # tools.py
-import os
-from supabase import create_client, Client
-from sentence_transformers import SentenceTransformer
+import io
+import base64
+import numpy as np
+import matplotlib
+import sympy as sp
 
-supabase: Client = create_client(
-    os.environ.get("SUPABASE_URL"), 
-    os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-)
+# Force Matplotlib to use a headless backend so it doesn't try to open GUI windows on your Linux server
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
-# Load the exact same model used in yesterday's ingestion script
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
-def search_knowledge_base(user_query: str) -> str:
+def generate_math_plot(expression_str: str) -> str:
     """
-    Converts a query to a vector, searches PostgreSQL, and returns the formatted text.
+    Evaluates an algebraic expression, plots it on a Cartesian plane, 
+    and returns a base64 Markdown image string.
     """
-    print(f"🔍 Searching Vector DB for: '{user_query}'")
+    print(f"📈 EXECUTING TOOL: generate_math_plot({expression_str})")
     
-    # 1. Vectorize the search query
-    query_vector = model.encode(user_query).tolist()
-    
-    # 2. Execute the Supabase RPC function
-    response = supabase.rpc(
-        'match_documents',
-        {
-            'query_embedding': query_vector,
-            'match_threshold': 0.3,
-            'match_count': 3
-        }
-    ).execute()
-    
-    matches = response.data
-    
-    if not matches:
-        return "No relevant information found in the verified knowledge base."
+    try:
+        # 1. PARSE THE MATH SAFELY
+        x = sp.Symbol('x')
+        # Use sympify to safely convert the string to a mathematical object
+        expr = sp.sympify(expression_str)
         
-    # 3. Format the retrieved chunks into a single context string
-    injected_context = "--- VERIFIED KNOWLEDGE BASE ---\n"
-    for match in matches:
-        injected_context += f"Source: {match['document_title']} (Confidence: {match['similarity']:.2f})\n"
-        injected_context += f"{match['chunk_content']}\n\n"
+        # Convert the SymPy expression into a fast, executable NumPy function
+        f = sp.lambdify(x, expr, "numpy")
         
-    return injected_context
+        # 2. GENERATE THE COORDINATES
+        # Create an array of 400 points between -10 and 10 for a smooth curve
+        x_vals = np.linspace(-10, 10, 400)
+        y_vals = f(x_vals)
+        
+        # 3. DRAW THE CANVAS
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.plot(x_vals, y_vals, color='#3B82F6', linewidth=2)
+        
+        # Format the grid to look like a professional math textbook
+        ax.axhline(0, color='black', linewidth=1)
+        ax.axvline(0, color='black', linewidth=1)
+        ax.grid(True, linestyle='--', alpha=0.6)
+        ax.set_title(f"$f(x) = {sp.latex(expr)}$")
+        
+        # 4. BUFFER & ENCODE (Zero Disk I/O)
+        buf = io.BytesIO()
+        # Save directly to RAM buffer as a high-quality PNG
+        plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)
+        plt.close(fig) # Free the memory!
+        
+        buf.seek(0)
+        base64_img = base64.b64encode(buf.read()).decode('utf-8')
+        
+        # 5. RETURN MARKDOWN
+        # The AI will read this string and pass it directly to the Next.js frontend
+        return f"![Generated Plot](data:image/png;base64,{base64_img})"
+
+    except Exception as e:
+        return f"Plot generation failed: {str(e)}"
