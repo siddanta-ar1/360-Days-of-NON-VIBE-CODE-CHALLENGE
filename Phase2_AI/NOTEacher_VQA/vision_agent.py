@@ -2,12 +2,15 @@
 import base64
 import os
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.params import Depends
+from security import verify_premium_tier
 from openai import AsyncOpenAI
 
 router = APIRouter()
 client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-@router.post("/api/vision/analyze")
+
+@router.post("/api/vision/analyze", dependencies=[Depends(verify_premium_tier)])
 async def analyze_handwritten_math(file: UploadFile = File(...)):
     # 1. VALIDATE INCOMING PAYLOAD
     if not file.content_type.startswith("image/"):
