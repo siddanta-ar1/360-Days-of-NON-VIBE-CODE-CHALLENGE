@@ -1,41 +1,41 @@
 # master_agent.py
-from fastapi import FastAPI, HTTPException, Depends
-from openai import AsyncOpenAI
-from quota_manager import check_token_quota, record_token_consumption
+import time
+import uuid
+from fastapi import FastAPI, Request
+from logger_config import trace_id_var, get_logger
 
 app = FastAPI()
-client = AsyncOpenAI()
 
-@app.post("/api/chat/agent")
-async def process_agent_interaction(user_id: str, user_tier: str, prompt: str):
-    # 1. PRE-FLIGHT FIREWALL GUARD
-    quota_available = await check_token_quota(user_id, user_tier)
-    if not quota_available:
-        raise HTTPException(
-            status_code=429, 
-            detail="Daily compute allocation exhausted. Upgrade to premium tier for expanded access."
+@app.middleware("http")
+async def trace_logging_middleware(request: Request, call_next):
+    # 1. GENERATE THE TRACE ID
+    # The millisecond the payload hits the edge, we assign it a cryptographic UUID
+    request_id = str(uuid.uuid4())
+    trace_id_var.set(request_id)
+    
+    logger = get_logger()
+    start_time = time.time()
+    
+    # 2. LOG INGRESS
+    logger.info("http_request_started", method=request.method, path=request.url.path)
+    
+    try:
+        # Pass the request down into your application (Vision, Agents, etc.)
+        response = await call_next(request)
+        
+        # 3. LOG EGRESS & LATENCY
+        process_time_ms = round((time.time() - start_time) * 1000, 2)
+        logger.info(
+            "http_request_completed", 
+            status_code=response.status_code, 
+            latency_ms=process_time_ms
         )
-
-    # 2. RUN ARCHITECTURAL WORKLOAD
-    # Simulate conversation compilation
-    messages = [{"role": "user", "content": prompt}]
-    
-    response = await client.chat.completions.create(
-        model="gpt-4o",
-        messages=messages
-    )
-    
-    # 3. EXTRACT EXACT USAGE METRICS DIRECTLY FROM PAYLOAD
-    usage_data = response.usage
-    input_tokens = usage_data.prompt_tokens
-    output_tokens = usage_data.completion_tokens
-    total_consumed = usage_data.total_tokens
-
-    # 4. POST-FLIGHT METERING DECREMENT
-    # Asynchronously record metrics without delaying the client's HTTP response
-    await record_token_consumption(user_id, total_consumed)
-
-    return {
-        "content": response.choices[0].message.content,
-        "metrics": {"prompt": input_tokens, "completion": output_tokens, "total": total_consumed}
-    }
+        
+        # Optional: Attach the Trace ID to the outgoing headers so the frontend can read it
+        response.headers["X-Trace-ID"] = request_id
+        return response
+        
+    except Exception as e:
+        # 4. CAPTURE FATAL CRASHES
+        logger.error("http_request_failed", error=str(e), type=type(e).__name__)
+        raise
