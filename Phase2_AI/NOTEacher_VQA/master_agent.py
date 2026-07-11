@@ -1,28 +1,21 @@
-# master_agent.py (Inside your orchestrate_swarm or specific agent loop)
-from tools import search_knowledge_base
+# logger_config.py (Append this custom processor)
+import asyncio
+from axiom_shipper import enqueue_log
 
-async def generate_rag_response(user_query: str):
-    # 1. Fetch the relevant mathematical context from Supabase
-    verified_data = search_knowledge_base(user_query)
-    
-    # 2. Build the strict prompt architecture
-    system_prompt = f"""You are the NOTEacher Mathematical Tutor.
-    Answer the user's question using ONLY the provided verified knowledge base below.
-    If the answer is not contained in the text, you must say "I do not have that information."
-    Do not hallucinate external facts.
-
-    {verified_data}
+def axiom_dispatch_processor(logger, method_name, event_dict):
     """
-    
-    conversation = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_query}
-    ]
-    
-    # 3. Generate the grounded response
-    response = await client.chat.completions.create(
-        model="gpt-4o",
-        messages=conversation
-    )
-    
-    return response.choices[0].message.content
+    Structlog processor that copies the log dictionary into the Axiom async queue.
+    """
+    # We must schedule the async enqueue function inside the running event loop
+    try:
+        loop = asyncio.get_running_loop()
+        if loop.is_running():
+            # Schedule the queue push without waiting for it to finish
+            loop.create_task(enqueue_log(event_dict.copy()))
+    except RuntimeError:
+        # Happens during synchronous startup/shutdown before the loop exists
+        pass
+        
+    return event_dict
+
+# Ensure axiom_dispatch_processor is added to your structlog.configure(processors=[...]) list!
