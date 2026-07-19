@@ -1,0 +1,67 @@
+The core concept 
+
+
+A USB printer is reached through the computer. An ethernet printer is its own device on your network with its own IP address, listening on port 9100 (raw / JetDirect). To print you send ESC/POS bytes to IP:9100.
+
+The reason your earlier attempt failed: the printer ships with a default factory IP that is on a different subnet than your router. So nothing could reach it. Your friend's three fixes map exactly to this:
+
+┌─────────────────────────┬───────────────────────────────────────────────┐
+│  What your friend did   │            What it actually means             │
+├─────────────────────────┼───────────────────────────────────────────────┤
+│ "Download printer       │ Vendor IP-config tool needed to see and set   │
+│ utility"                │ the printer's IP                              │
+├─────────────────────────┼───────────────────────────────────────────────┤
+│ "Configure the IP"      │ Give the printer an address on your network's │
+│                         │  subnet                                       │
+├─────────────────────────┼───────────────────────────────────────────────┤
+│ "Changed network IP to  │ Temporary trick: move the PC onto the         │
+│ match printer"          │ printer's subnet so the utility can reach it  │
+├─────────────────────────┼───────────────────────────────────────────────┤
+│ "Turn offline mode off" │ Printer had a setting that kept it from       │
+│                         │ accepting jobs                                │
+└─────────────────────────┴───────────────────────────────────────────────┘
+
+The actual flow (step by step)
+
+1. Find the printer's current IP
+Hold the FEED button while powering the printer on → it prints a self-test slip. That slip shows its current IP, subnet mask, and MAC. Generic ZKP8016-class printers usually default to something like 192.168.1.87 or 192.168.123.100.
+
+2. Get your PC onto the printer's subnet (temporarily)
+If the printer says 192.168.123.100 but your router hands out 192.168.1.x, you can't reach it. Two options:
+- Easy: set your PC's ethernet adapter to a static IP on the printer's subnet, e.g. PC = 192.168.123.50, mask 255.255.255.0. Now PC and printer can talk.
+- Then plug printer ↔ PC (or both into the same switch/router).
+
+3. Install the vendor utility and set the printer's real IP
+Run the ZKTeco/generic Printer Test Tool / IP Setup utility. It scans by MAC and finds the printer even on the "wrong" subnet. In it:
+- Set a static IP on your network, e.g. 192.168.1.200, mask 255.255.255.0, gateway = your router 192.168.1.1.
+- Pick an IP outside your router's DHCP range (or reserve it in the router by MAC) so it never changes — a printer that changes IP breaks printing.
+- Save/apply → the printer reboots onto your network.
+
+4. Turn OFF offline mode
+In the same utility (or via a config command), disable "offline" / "hold jobs". Offline mode makes the printer ignore incoming data even when reachable.
+
+5. Put your PC back to normal (DHCP)
+Undo the static IP from step 2. Now everything is on 192.168.1.x and the printer sits at 192.168.1.200.
+
+6. Verify the raw path works
+From your machine, confirm the printer accepts data on port 9100:
+nc -vz 192.168.1.200 9100        # should say "succeeded / open"
+printf '\x1b\x40Hello\n\n\n\x1d\x56\x00' | nc 192.168.1.200 9100   # should print + cut
+If that slip comes out, the hardware/network side is 100% done.
+
+How this plugs into your app (the part that matters for you)
+
+Right now your stack is QZ Tray → CUPS raw queue → USB. With ethernet you have two clean choices:
+
+- Option A — CUPS raw queue over socket (least code change). Repoint the same raw queue at the network printer:
+socket://192.168.1.200:9100
+- Keep it as a raw queue (no driver — you already learned that the hard way with the Epson EPL-6100 laser driver producing garbage). QZ keeps printing to the queue by name exactly as it does today. Nothing in your app code changes.
+- Option B — QZ prints straight to the host. Point QZ's config at the host/port instead of a named printer (config.setHost('192.168.1.200', 9100) style). Removes CUPS from the path entirely, but requires a code change in your print module.
+
+Option A is what I'd do — it matches your current KOT/invoice slot and needs zero app changes; you just swap USB for socket on one CUPS queue.
+
+---
+Want me to:
+1. Look at your current print module + CUPS queue and give you the exact command to repoint it to socket://IP:9100, or
+2. Note down the printer's fixed IP / setup in memory once you've picked it?
+
