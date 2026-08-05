@@ -1,53 +1,38 @@
-# master_agent.py (Updated Integration)
-from fastapi import BackgroundTasks
-from memory_agent import harvest_session_memory, model
+# master_agent.py (Append this route)
+from celery.result import AsyncResult
+from celery_app import celery_app
 
-async def fetch_student_context(user_id: str, prompt: str) -> str:
-    """Retrieves relevant historical cognitive facts for the incoming prompt."""
-    query_vector = model.encode(prompt).tolist()
+@app.get("/api/documents/status/{task_id}")
+async def get_task_status(task_id: str):
+    """
+    Ultra-fast lookup endpoint that queries Redis for the current state
+    of a background Celery task.
+    """
+    # Fetch the task object by ID from the Redis backend
+    task_result = AsyncResult(task_id, app=celery_app)
     
-    response = supabase.rpc(
-        'match_cognitive_memory',
-        {
-            'target_user_id': user_id,
-            'query_embedding': query_vector,
-            'match_threshold': 0.55,
-            'match_count': 3
-        }
-    ).execute()
+    # Base response structure
+    response = {
+        "task_id": task_id,
+        "state": task_result.state,
+    }
     
-    matches = response.data
-    if not matches:
-        return ""
+    if task_result.state == 'PENDING':
+        # Task is waiting in the queue
+        response["status"] = "Waiting for an available worker..."
         
-    facts_str = "\n".join([f"- {m['fact_content']} (Relevance: {m['similarity']:.2f})" for m in matches])
-    return f"\n[LONG-TERM STUDENT COGNITIVE PROFILE]:\n{facts_str}\n"
-
-@app.post("/api/chat/agent")
-async def process_agent_interaction(
-    user_id: str, 
-    prompt: str, 
-    chat_history: list[dict], 
-    background_tasks: BackgroundTasks
-):
-    # 1. Inject targeted long-term memory dynamically
-    memory_context = await fetch_student_context(user_id, prompt)
-    
-    system_prompt = (
-        "You are the NOTEacher AI Math Tutor. Adapt your teaching style "
-        f"strictly according to the student's known profile:\n{memory_context}"
-    )
-    
-    # 2. Execute primary inference...
-    messages = [{"role": "system", "content": system_prompt}] + chat_history + [{"role": "user", "content": prompt}]
-    response = await client.chat.completions.create(model="gpt-4o", messages=messages)
-    answer = response.choices[0].message.content
-    
-    # 3. Schedule non-blocking memory harvest in the background
-    updated_history = chat_history + [
-        {"role": "user", "content": prompt},
-        {"role": "assistant", "content": answer}
-    ]
-    background_tasks.add_task(harvest_session_memory, user_id, updated_history)
-    
-    return {"content": answer}
+    elif task_result.state == 'PROGRESS':
+        # Task is currently running; grab the custom meta info we set yesterday
+        response["status"] = task_result.info.get('status', 'Processing...')
+        
+    elif task_result.state == 'SUCCESS':
+        # Task finished completely
+        response["status"] = "Complete"
+        response["result"] = task_result.result # E.g., {"chunks_processed": 450}
+        
+    elif task_result.state == 'FAILURE':
+        # Task threw an unhandled exception
+        response["status"] = "Failed"
+        response["error"] = str(task_result.info)
+        
+    return response
