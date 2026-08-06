@@ -1,7 +1,25 @@
 # celery_app.py
 import os
 from celery import Celery
+# celery_app.py (Append schedule configuration)
+from celery.schedules import crontab
+from celery_app import celery_app
 
+# Define the periodic task routing
+celery_app.conf.beat_schedule = {
+    'weekly-memory-pruning': {
+        'task': 'tasks.prune_transient_memory',
+        # Executes every Sunday at exactly 1:00 AM UTC
+        'schedule': crontab(minute=0, hour=1, day_of_week='sunday'),
+        'args': ()
+    },
+    'daily-telemetry-rollup': {
+        'task': 'tasks.rollup_daily_telemetry',
+        # Executes every day at Midnight UTC
+        'schedule': crontab(minute=0, hour=0),
+        'args': ()
+    }
+}
 # Configure Celery to use Redis as both the message broker and the result backend
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 

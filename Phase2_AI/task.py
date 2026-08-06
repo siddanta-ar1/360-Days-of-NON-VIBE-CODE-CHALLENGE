@@ -2,6 +2,37 @@
 import time
 from celery_app import celery_app
 from logger_config import get_logger
+# tasks.py (Append scheduled task)
+from celery_app import celery_app
+from logger_config import get_logger
+from supabase import create_client
+import os
+
+supabase = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY"))
+
+@celery_app.task(name="tasks.prune_transient_memory")
+def prune_transient_memory():
+    """
+    Background cron job to delete transient cognitive facts older than 30 days.
+    """
+    logger = get_logger()
+    logger.info("memory_pruning_started")
+    
+    try:
+        # Example Supabase RPC or direct table query to delete old records
+        response = supabase.table("student_cognitive_memory") \
+            .delete() \
+            .lt("created_at", "now() - interval '30 days'") \
+            .execute()
+            
+        deleted_count = len(response.data)
+        logger.info("memory_pruning_complete", deleted_records=deleted_count)
+        return {"status": "SUCCESS", "deleted_records": deleted_count}
+        
+    except Exception as e:
+        logger.error("memory_pruning_failed", error=str(e))
+        raise
+
 
 @celery_app.task(bind=True, name="process_textbook_pdf")
 def process_textbook_pdf(self, file_path: str, document_id: str, user_id: str):
